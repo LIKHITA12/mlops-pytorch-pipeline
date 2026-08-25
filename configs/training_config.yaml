@@ -1,0 +1,18 @@
+model:
+  architecture: resnet18
+  input_dim: 10
+  hidden_dim: 32
+  num_classes: 10
+
+data:
+  dataset: CIFAR10
+  data_dir: ./data
+  num_samples: 1000
+  train_split: 0.8
+  seed: 42
+
+training:
+  epochs: 5
+  batch_size: 32
+  learning_rate: 0.001
+  device: cpu
