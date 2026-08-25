@@ -1,9 +1,20 @@
 import json
+import sys
 from pathlib import Path
+
+# Ensure project root is on sys.path so `from src...` imports work when running
+# this file as a script (e.g. `python src/train.py`). When executing a file
+# directly, Python sets sys.path[0] to the script's directory (src/), which
+# prevents importing the `src` package by name. Insert the repository root
+# (parent of `src`) at the front of sys.path.
+_PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
 
 import torch
 import torch.nn as nn
 import yaml
+import argparse
 
 try:
     from dataset import get_dataloaders
@@ -77,9 +88,12 @@ def evaluate(
 
 
 def main():
-    config_path = Path("/app/configs/training_config.yaml")
-    if not config_path.exists():
-        config_path = Path("configs/training_config.yaml")
+    parser = argparse.ArgumentParser(description="Train the model using config file")
+    parser.add_argument("--config", type=str, default="configs/training_config.yaml", help="Path to training config YAML")
+    parser.add_argument("--download", action="store_true", help="Allow dataset download if missing (default: False)")
+    args = parser.parse_args()
+
+    config_path = Path(args.config)
 
     config = load_config(config_path)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -95,10 +109,20 @@ def main():
         hidden_dim=model_cfg.get("hidden_dim", 32),
         num_classes=model_cfg.get("num_classes", 2),
     ).to(device)
+    # choose image size heuristically for common architectures
+    arch = model_cfg.get("architecture", "mlp")
+    if isinstance(arch, str) and "resnet" in arch.lower():
+        image_size = 224
+    else:
+        image_size = 32
 
     train_loader, val_loader = get_dataloaders(
         data_dir=data_cfg.get("data_dir", "."),
         batch_size=training_cfg.get("batch_size", 32),
+        num_workers=training_cfg.get("num_workers", 2),
+        dataset_name=data_cfg.get("dataset", "CIFAR10"),
+        image_size=image_size,
+        download=args.download,
         num_samples=data_cfg.get("num_samples", 1000),
         input_dim=model_cfg.get("input_dim", 10),
         train_split=data_cfg.get("train_split", 0.8),
