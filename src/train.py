@@ -1,5 +1,6 @@
 import json
 import sys
+import os
 from pathlib import Path
 
 # Ensure project root is on sys.path so `from src...` imports work when running
@@ -93,7 +94,9 @@ def main():
     parser.add_argument("--download", action="store_true", help="Allow dataset download if missing (default: False)")
     args = parser.parse_args()
 
-    config_path = Path(args.config)
+    # Allow overriding the config path via environment variable `TRAINING_CONFIG` (useful for mounted configs)
+    env_cfg = os.environ.get("TRAINING_CONFIG")
+    config_path = Path(env_cfg) if env_cfg else Path(args.config)
 
     config = load_config(config_path)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

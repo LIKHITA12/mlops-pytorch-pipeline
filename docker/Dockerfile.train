@@ -1,11 +1,34 @@
-FROM python:3.11-slim
+FROM python:3.11-slim AS base
 
 WORKDIR /app
 
+# Keep Python output unbuffered and avoid .pyc files
+ENV PYTHONDONTWRITEBYTECODE=1 \
+	PYTHONUNBUFFERED=1
+
+# Install build deps, upgrade pip and install Python requirements
 COPY requirements/train.txt ./requirements/train.txt
-RUN pip install --no-cache-dir -r requirements/train.txt
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends build-essential gcc \
+	&& pip install --upgrade pip setuptools wheel \
+	&& pip install --no-cache-dir -r requirements/train.txt \
+	&& apt-get purge -y --auto-remove build-essential gcc \
+	&& rm -rf /var/lib/apt/lists/*
 
-COPY src ./src
-COPY configs ./configs
+# Final training runtime image - keep it slim by copying installed packages
+FROM python:3.11-slim AS training
+WORKDIR /app
+ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "src/train.py"]
+# Copy installed packages from the build stage
+COPY --from=base /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=base /usr/local/bin /usr/local/bin
+
+# Copy application code and default configs. Users can mount a config file over /app/configs/training_config.yaml
+COPY src/ ./src/
+COPY configs/ ./configs/
+
+# Default config path can be overridden via the TRAINING_CONFIG env var or by passing --config to the script
+ENV TRAINING_CONFIG=/app/configs/training_config.yaml
+
+ENTRYPOINT ["python", "src/train.py"]
