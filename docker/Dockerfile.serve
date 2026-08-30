@@ -3,17 +3,11 @@ FROM python:3.11-slim
 WORKDIR /app
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-	PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1
 
-# Install minimal system deps required for Pillow and curl for healthcheck
-RUN apt-get update \
-	&& apt-get install -y --no-install-recommends libjpeg-dev zlib1g-dev curl \
-	&& rm -rf /var/lib/apt/lists/*
-
+# Install only serving/inference dependencies
 COPY requirements/serve.txt ./requirements/serve.txt
-RUN pip install --upgrade pip setuptools wheel \
-	&& pip install --no-cache-dir -r requirements/serve.txt \
-	&& rm -rf /root/.cache/pip
+RUN pip install --no-cache-dir -r requirements/serve.txt
 
 # Create a non-root user and ensure app dir ownership
 RUN useradd -m -u 1000 app && chown -R app:app /app
@@ -23,12 +17,12 @@ COPY configs ./configs
 
 USER app
 
-# Serve on 8080 as required
+# Expose port 8080 as required
 EXPOSE 8080
 
-# Healthcheck: check /health endpoint
+# Healthcheck: test /health endpoint using python urllib (no curl apt dependency needed)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD curl -f http://127.0.0.1:8080/health || exit 1
+  CMD python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health')" || exit 1
 
-# Run with uvicorn for production-like serving; use 1 worker inside container
+# Run with uvicorn for model serving on port 8080
 CMD ["uvicorn", "src.serve:app", "--host", "0.0.0.0", "--port", "8080"]

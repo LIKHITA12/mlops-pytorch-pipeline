@@ -1,0 +1,59 @@
+{
+  "status": "success",
+  "predicted_class_id": 3,
+  "prediction": "cat",
+  "confidence": 0.923624,
+  "probabilities": [
+    {
+      "class_id": 0,
+      "label": "airplane",
+      "probability": 0.00238
+    },
+    {
+      "class_id": 1,
+      "label": "automobile",
+      "probability": 0.002795
+    },
+    {
+      "class_id": 2,
+      "label": "bird",
+      "probability": 0.000839
+    },
+    {
+      "class_id": 3,
+      "label": "cat",
+      "probability": 0.923624
+    },
+    {
+      "class_id": 4,
+      "label": "deer",
+      "probability": 0.000685
+    },
+    {
+      "class_id": 5,
+      "label": "dog",
+      "probability": 0.02384
+    },
+    {
+      "class_id": 6,
+      "label": "frog",
+      "probability": 0.004279
+    },
+    {
+      "class_id": 7,
+      "label": "horse",
+      "probability": 0.001676
+    },
+    {
+      "class_id": 8,
+      "label": "ship",
+      "probability": 0.037963
+    },
+    {
+      "class_id": 9,
+      "label": "truck",
+      "probability": 0.00192
+    }
+  ],
+  "model_path": "/Users/likhita_c@optum.com/Mtech_project/mlops-pytorch-pipeline/checkpoints/classifier_v1.pt"
+}
