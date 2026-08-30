@@ -1,0 +1,18 @@
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.venv/
+venv/
+.env
+.DS_Store
+.pytest_cache/
+.mypy_cache/
+artifacts/
+logs/
+.ipynb_checkpoints/
+
+# Large dataset files
+/data/
+*.tar.gz

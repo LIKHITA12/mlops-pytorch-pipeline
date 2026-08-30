@@ -1,0 +1,28 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Install only serving/inference dependencies
+COPY requirements/serve.txt ./requirements/serve.txt
+RUN pip install --no-cache-dir -r requirements/serve.txt
+
+# Create a non-root user and ensure app dir ownership
+RUN useradd -m -u 1000 app && chown -R app:app /app
+
+COPY src ./src
+COPY configs ./configs
+
+USER app
+
+# Expose port 8080 as required
+EXPOSE 8080
+
+# Healthcheck: test /health endpoint using python urllib (no curl apt dependency needed)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health')" || exit 1
+
+# Run with uvicorn for model serving on port 8080
+CMD ["uvicorn", "src.serve:app", "--host", "0.0.0.0", "--port", "8080"]
