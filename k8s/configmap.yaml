@@ -2,19 +2,20 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: training-config
-  namespace: mlops-pytorch
+  namespace: ml-training
 data:
   training_config.yaml: |
     model:
-      input_dim: 10
-      hidden_dim: 32
-      num_classes: 2
-    data:
-      num_samples: 1000
-      train_split: 0.8
-      seed: 42
+      architecture: resnet18
+      num_classes: 10
     training:
-      epochs: 5
-      batch_size: 32
+      epochs: 10
+      batch_size: 64
       learning_rate: 0.001
-      device: cpu
+      early_stopping_patience: 3
+    data:
+      dataset: cifar10
+      data_dir: /app/data
+    output:
+      checkpoint_dir: /app/checkpoints
+      model_name: classifier_v1.pt
