@@ -30,7 +30,7 @@ spec:
               cpu: "2"
               memory: "4Gi"
               # Bonus GPU request (uncomment for GPU nodes)
-              # nvidia.com/gpu: "1"
+              nvidia.com/gpu: "1"
       volumes:
         - name: config-volume
           configMap:
