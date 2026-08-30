@@ -24,12 +24,12 @@ spec:
               mountPath: /app/checkpoints
           resources:
             requests:
-              cpu: "2"
-              memory: "4Gi"
+              cpu: "1"
+              memory: "2Gi"
             limits:
               cpu: "2"
               memory: "4Gi"
-              # Bonus GPU request (uncomment for GPU nodes)
+              # Bonus GPU request (uncomment for GPU nodes):
               nvidia.com/gpu: "1"
       volumes:
         - name: config-volume
