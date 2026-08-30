@@ -1,11 +1,25 @@
-FROM python:3.11-slim
+# Stage 1: Base with dependencies
+FROM python:3.11-slim AS base
 
 WORKDIR /app
 
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# Install Python requirements
 COPY requirements/train.txt ./requirements/train.txt
 RUN pip install --no-cache-dir -r requirements/train.txt
 
-COPY src ./src
-COPY configs ./configs
+# Stage 2: Training runtime
+FROM base AS training
+WORKDIR /app
+ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "src/train.py"]
+# Copy application code and default configs
+COPY src/ ./src/
+COPY configs/ ./configs/
+
+# Default config path can be overridden via TRAINING_CONFIG or volume mount
+ENV TRAINING_CONFIG=/app/configs/training_config.yaml
+
+ENTRYPOINT ["python", "src/train.py"]

@@ -12,3 +12,7 @@ venv/
 artifacts/
 logs/
 .ipynb_checkpoints/
+
+# Large dataset files
+/data/
+*.tar.gz
